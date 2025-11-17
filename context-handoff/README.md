@@ -70,19 +70,26 @@ Implement user authentication with JWT tokens
 ## Why This Works
 
 **Preserves progress:**
-- Exact file paths and line numbers
-- Specific work completed, not vague summaries
-- Clear remaining tasks tied to original goal
+- Exact file paths and line numbers for all work
+- Comprehensive work completed with reasoning
+- Clear remaining tasks with precise locations
+- Current state tracking for all deliverables
+
+**Prevents wasted effort:**
+- Documents attempted approaches and failures
+- Captures dead ends to avoid repeating
+- Records what didn't work and why
 
 **Prevents scope creep:**
 - Focuses only on completing the original request
 - Doesn't add new features or "nice to haves"
 - Maintains task boundaries across context switches
 
-**Transfers critical decisions:**
-- Why certain approaches were chosen
-- Technical constraints discovered
-- Gotchas to avoid
+**Transfers critical knowledge:**
+- Key decisions and trade-offs made
+- Technical constraints and gotchas discovered
+- Environment details and assumptions
+- References to documentation consulted
 
 ## Installation
 
