@@ -54,35 +54,90 @@ Keep markdown formatting within content (bold, lists, code blocks).
 SKILL.md under 500 lines. Split detailed content into reference files. Load only what's needed for the current workflow.
 </essential_principles>
 
+<context_scan>
+**Run on every invocation to understand current state:**
+
+```bash
+# Are we in a skill directory?
+if [ -f "SKILL.md" ]; then
+    SKILL_NAME=$(grep "^name:" SKILL.md 2>/dev/null | cut -d: -f2 | xargs)
+    echo "IN_SKILL: $SKILL_NAME"
+
+    # What structure exists?
+    [ -d "workflows" ] && echo "HAS: workflows/"
+    [ -d "references" ] && echo "HAS: references/"
+    [ -d "templates" ] && echo "HAS: templates/"
+    [ -d "scripts" ] && echo "HAS: scripts/"
+
+    # Router or simple?
+    grep -q "<intake>" SKILL.md && echo "PATTERN: router" || echo "PATTERN: simple"
+else
+    echo "NOT_IN_SKILL"
+fi
+
+# Show available build skills
+echo "BUILD_SKILLS:"
+ls ~/.claude/skills/build/ 2>/dev/null | head -5
+```
+
+**Present findings before intake question.**
+</context_scan>
+
 <intake>
-**Ask the user:**
+**If IN skill directory:**
+```
+Working in: {skill-name} ({pattern})
+Components: {what exists}
 
 What would you like to do?
-1. Create a new skill
-2. Audit a skill (check best practices)
-3. Verify a skill (check content accuracy)
-4. Add a workflow to a skill
-5. Add a reference to a skill
-6. Add a template to a skill
-7. Add a script to a skill
-8. Upgrade skill to router pattern
-9. Get guidance on skill design
+1. Add component (workflow/reference/template/script)
+2. Audit this skill
+3. Verify content is current
+4. Upgrade to router pattern
+5. Create different skill
+6. Get guidance
+```
+
+**If NOT in skill directory:**
+```
+What would you like to do?
+1. Create new skill
+2. Audit/modify existing skill
+3. Get guidance
+```
 
 **Wait for response before proceeding.**
 </intake>
 
 <routing>
-| Response | Workflow |
-|----------|----------|
-| 1, "new", "create", "build", "make" | `workflows/create-new-skill.md` |
-| 2, "audit", "check", "review", "analyze" | `workflows/audit-skill.md` |
-| 3, "verify", "accurate", "fresh", "stale", "outdated" | `workflows/verify-skill.md` |
-| 4, "add workflow", "new workflow" | `workflows/add-workflow.md` |
-| 5, "add reference", "new reference" | `workflows/add-reference.md` |
-| 6, "add template", "new template" | `workflows/add-template.md` |
-| 7, "add script", "new script" | `workflows/add-script.md` |
-| 8, "upgrade", "router", "restructure" | `workflows/upgrade-to-router.md` |
-| 9, "guidance", "help", "think", "design", "plan" | `workflows/get-guidance.md` |
+**When IN skill directory:**
+
+| Response | Next Action | Workflow |
+|----------|-------------|----------|
+| 1, "add", "component" | Ask: "Add what? (workflow/reference/template/script)" | workflows/add-{type}.md |
+| 2, "audit", "check", "review" | Audit current directory | workflows/audit-skill.md |
+| 3, "verify", "fresh", "current" | Verify current directory | workflows/verify-skill.md |
+| 4, "upgrade", "router", "restructure" | Upgrade current directory | workflows/upgrade-to-router.md |
+| 5, "create", "new", "different" | Exit directory, route to create flow | workflows/create-new-skill.md OR create-domain-expertise-skill.md |
+| 6, "guidance", "help" | General guidance | workflows/get-guidance.md |
+
+**When NOT in skill directory:**
+
+| Response | Next Action | Workflow |
+|----------|-------------|----------|
+| 1, "create", "new", "build" | Ask: "Task-execution skill or domain expertise skill?" | Route to appropriate create workflow |
+| 2, "audit", "modify", "existing" | Ask: "Path to skill?" | Route to appropriate workflow |
+| 3, "guidance", "help" | General guidance | workflows/get-guidance.md |
+
+**Progressive disclosure for option 1 (create):**
+- If user selects "Task-execution skill" → workflows/create-new-skill.md
+- If user selects "Domain expertise skill" → workflows/create-domain-expertise-skill.md
+
+**Progressive disclosure for add component:**
+- If user specifies workflow → workflows/add-workflow.md
+- If user specifies reference → workflows/add-reference.md
+- If user specifies template → workflows/add-template.md
+- If user specifies script → workflows/add-script.md
 
 **After reading the workflow, follow it exactly.**
 </routing>
@@ -148,6 +203,7 @@ All in `workflows/`:
 | Workflow | Purpose |
 |----------|---------|
 | create-new-skill.md | Build a skill from scratch |
+| create-domain-expertise-skill.md | Build exhaustive domain knowledge base for build/ |
 | audit-skill.md | Analyze skill against best practices |
 | verify-skill.md | Check if content is still accurate |
 | add-workflow.md | Add a workflow to existing skill |
@@ -174,10 +230,13 @@ Name conventions: `create-*`, `manage-*`, `setup-*`, `generate-*`, `build-*`
 
 <success_criteria>
 A well-structured skill:
+- Context scan runs on every invocation
+- Presents context-aware options (different if in skill directory)
 - Has valid YAML frontmatter
 - Uses pure XML structure (no markdown headings in body)
 - Has essential principles inline in SKILL.md
 - Routes to focused workflows
 - Keeps SKILL.md under 500 lines
+- Uses progressive disclosure (max 6 options, then follow-up questions)
 - Has been tested with real usage
 </success_criteria>
