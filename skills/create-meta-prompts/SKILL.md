@@ -579,6 +579,8 @@ If a prompt's output includes instructions to create more prompts:
 - Output file location specified in prompt
 - SUMMARY.md requirement included in prompt
 - Metadata requirements included for Research/Plan outputs
+- Quality controls included for Research outputs (verification checklist, QA, pre-submission)
+- Streaming write instructions included for Research outputs
 - Decision tree presented
 
 **Execution (if user chooses to run):**
@@ -591,4 +593,11 @@ If a prompt's output includes instructions to create more prompts:
 - Successful prompts archived to `completed/` subfolder
 - SUMMARY.md displayed inline in results
 - Results presented with decisions/blockers flagged
+
+**Research Quality (for Research prompts):**
+- Verification checklist completed
+- Quality report distinguishes verified from assumed claims
+- Sources consulted listed with URLs
+- Confidence levels assigned to findings
+- Critical claims verified with official documentation
 </success_criteria>

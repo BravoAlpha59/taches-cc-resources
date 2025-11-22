@@ -1,9 +1,19 @@
 <overview>
 Prompt patterns for gathering information that will be consumed by planning or implementation prompts.
+
+Includes quality controls, verification mechanisms, and streaming writes to prevent research gaps and token limit failures.
 </overview>
 
 <prompt_template>
 ```xml
+<session_initialization>
+Before beginning research, verify today's date:
+!`date +%Y-%m-%d`
+
+Use this date when searching for "current" or "latest" information.
+Example: If today is 2025-11-22, search for "2025" not "2024".
+</session_initialization>
+
 <research_objective>
 Research {topic} to inform {subsequent use}.
 
@@ -24,10 +34,70 @@ Output: {topic}-research.md with structured findings
 </exclude>
 
 <sources>
-{Priority sources: official docs, specific sites}
-{Time constraints: prefer 2024-2025 sources}
+{Priority sources with exact URLs for WebFetch}
+Official documentation:
+- https://example.com/official-docs
+- https://example.com/api-reference
+
+Search queries for WebSearch:
+- "{topic} best practices {current_year}"
+- "{topic} latest version"
+
+{Time constraints: prefer current sources - check today's date first}
 </sources>
 </research_scope>
+
+<verification_checklist>
+{If researching configuration/architecture with known components:}
+□ Verify ALL known configuration/implementation options (enumerate below):
+  □ Option/Scope 1: {description}
+  □ Option/Scope 2: {description}
+  □ Option/Scope 3: {description}
+□ Document exact file locations/URLs for each option
+□ Verify precedence/hierarchy rules if applicable
+□ Confirm syntax and examples from official sources
+□ Check for recent updates or changes to documentation
+
+{For all research:}
+□ Verify negative claims ("X is not possible") with official docs
+□ Confirm all primary claims have authoritative sources
+□ Check both current docs AND recent updates/changelogs
+□ Test multiple search queries to avoid missing information
+□ Check for environment/tool-specific variations
+</verification_checklist>
+
+<research_quality_assurance>
+Before completing research, perform these checks:
+
+<completeness_check>
+- [ ] All enumerated options/components documented with evidence
+- [ ] Each access method/approach evaluated against ALL requirements
+- [ ] Official documentation cited for critical claims
+- [ ] Contradictory information resolved or flagged
+</completeness_check>
+
+<source_verification>
+- [ ] Primary claims backed by official/authoritative sources
+- [ ] Version numbers and dates included where relevant
+- [ ] Actual URLs provided (not just "search for X")
+- [ ] Distinguish verified facts from assumptions
+</source_verification>
+
+<blind_spots_review>
+Ask yourself: "What might I have missed?"
+- [ ] Are there configuration/implementation options I didn't investigate?
+- [ ] Did I check for multiple environments/contexts (e.g., Desktop vs Code)?
+- [ ] Did I verify claims that seem definitive ("cannot", "only", "must")?
+- [ ] Did I look for recent changes or updates to documentation?
+</blind_spots_review>
+
+<critical_claims_audit>
+For any statement like "X is not possible" or "Y is the only way":
+- [ ] Is this verified by official documentation?
+- [ ] Have I checked for recent updates that might change this?
+- [ ] Are there alternative approaches I haven't considered?
+</critical_claims_audit>
+</research_quality_assurance>
 
 <output_structure>
 Save to: `.prompts/{num}-{topic}-research/{topic}-research.md`
@@ -75,8 +145,58 @@ Structure findings using this XML format:
     <assumptions>
       {What was assumed}
     </assumptions>
+
+    <!-- ENHANCED: Research Quality Report -->
+    <quality_report>
+      <sources_consulted>
+        {List URLs of official documentation and primary sources}
+      </sources_consulted>
+      <claims_verified>
+        {Key findings verified with official sources}
+      </claims_verified>
+      <claims_assumed>
+        {Findings based on inference or incomplete information}
+      </claims_assumed>
+      <contradictions_encountered>
+        {Any conflicting information found and how resolved}
+      </contradictions_encountered>
+      <confidence_by_finding>
+        {For critical findings, individual confidence levels}
+        - Finding 1: High (official docs + multiple sources)
+        - Finding 2: Medium (single source, unclear if current)
+        - Finding 3: Low (inferred, requires hands-on verification)
+      </confidence_by_finding>
+    </quality_report>
   </metadata>
 </research>
+```
+</output_structure>
+
+<pre_submission_checklist>
+Before submitting your research report, confirm:
+
+**Scope Coverage**
+- [ ] All enumerated options/approaches investigated
+- [ ] Each component from verification checklist documented or marked "not found"
+- [ ] Official documentation cited for all critical claims
+
+**Claim Verification**
+- [ ] Each "not possible" or "only way" claim verified with official docs
+- [ ] URLs to official documentation included for key findings
+- [ ] Version numbers and dates specified where relevant
+
+**Quality Controls**
+- [ ] Blind spots review completed ("What did I miss?")
+- [ ] Quality report section filled out honestly
+- [ ] Confidence levels assigned with justification
+- [ ] Assumptions clearly distinguished from verified facts
+
+**Output Completeness**
+- [ ] All required XML sections present
+- [ ] SUMMARY.md created with substantive one-liner
+- [ ] Sources consulted listed with URLs
+- [ ] Next steps clearly identified
+</pre_submission_checklist>
 ```
 </output_structure>
 
@@ -180,9 +300,11 @@ For research, emphasize key recommendation and decision readiness. Next step typ
 
 <success_criteria>
 - All scope questions answered
-- Sources are current (2024-2025)
+- All verification checklist items completed
+- Sources are current and authoritative
 - Findings are actionable
-- Metadata captures gaps
+- Metadata captures gaps honestly
+- Quality report distinguishes verified from assumed
 - SUMMARY.md created with substantive one-liner
 - Ready for planning/implementation to consume
 </success_criteria>
@@ -237,9 +359,32 @@ Help the next Claude know what to trust:
     performance benchmarks. Rate limits are documented but
     actual behavior may differ under load.
   </confidence>
+
+  <quality_report>
+    <confidence_by_finding>
+      - JWT library comparison: High (npm stats + security audits + active maintenance verified)
+      - Performance benchmarks: Low (no official data, community reports vary)
+      - Rate limits: Medium (documented but not tested)
+    </confidence_by_finding>
+  </quality_report>
 </metadata>
 ```
 </explicit_confidence>
+
+<enumerate_known_possibilities>
+When researching systems with known components, enumerate them explicitly:
+```xml
+<verification_checklist>
+**CRITICAL**: Verify ALL configuration scopes:
+□ User scope - Global configuration
+□ Project scope - Project-level configuration files
+□ Local scope - Project-specific user overrides
+□ Environment scope - Environment variable based
+</verification_checklist>
+```
+
+This forces systematic coverage and prevents omissions.
+</enumerate_known_possibilities>
 
 </key_principles>
 
@@ -273,12 +418,25 @@ Output: jwt-research.md
 </exclude>
 
 <sources>
-- Official library documentation
+Official documentation (use WebFetch):
+- https://github.com/panva/jose
+- https://github.com/auth0/node-jsonwebtoken
+
+Additional sources (use WebSearch):
+- "JWT library comparison {current_year}"
+- "jose vs jsonwebtoken security {current_year}"
 - npm download stats
 - GitHub issues/security advisories
-- Prefer sources from 2024-2025
 </sources>
 </research_scope>
+
+<verification_checklist>
+□ Verify all major JWT libraries (jose, jsonwebtoken, passport-jwt)
+□ Check npm download trends for adoption metrics
+□ Review GitHub security advisories for each library
+□ Confirm TypeScript support with examples
+□ Document bundle sizes from bundlephobia or similar
+</verification_checklist>
 ```
 </technology_research>
 
@@ -304,11 +462,22 @@ Output: auth-security-research.md
 </include>
 
 <sources>
-- OWASP Cheatsheets
-- Security advisories
-- Reputable security blogs (2024-2025)
+Official sources (use WebFetch):
+- https://cheatsheetseries.owasp.org/cheatsheets/Authentication_Cheat_Sheet.html
+- https://cheatsheetseries.owasp.org/cheatsheets/Session_Management_Cheat_Sheet.html
+
+Search sources (use WebSearch):
+- "OWASP authentication {current_year}"
+- "secure token storage best practices {current_year}"
 </sources>
 </research_scope>
+
+<verification_checklist>
+□ Verify OWASP top 10 authentication vulnerabilities
+□ Check latest OWASP cheatsheet publication date
+□ Confirm recommended hash algorithms (bcrypt, scrypt, Argon2)
+□ Document secure cookie flags (httpOnly, secure, sameSite)
+</verification_checklist>
 ```
 </best_practices_research>
 
@@ -341,11 +510,24 @@ Output: stripe-research.md
 </exclude>
 
 <sources>
-- Stripe official documentation
-- Stripe API changelog (latest version)
-- Context7 MCP for current patterns
+Official sources (use WebFetch):
+- https://stripe.com/docs/api
+- https://stripe.com/docs/webhooks
+- https://stripe.com/docs/testing
+
+Context7 MCP:
+- Use mcp__context7__resolve-library-id for Stripe
+- Use mcp__context7__get-library-docs for current patterns
 </sources>
 </research_scope>
+
+<verification_checklist>
+□ Verify current API version and deprecation timeline
+□ Check webhook event types for our use case
+□ Confirm sandbox environment capabilities
+□ Document rate limits from official docs
+□ Verify SDK availability for our stack
+</verification_checklist>
 ```
 </api_service_research>
 
@@ -378,6 +560,14 @@ For each option:
 - Team familiarity
 </evaluation_criteria>
 </research_scope>
+
+<verification_checklist>
+□ Verify all candidate databases (PostgreSQL, MongoDB, DynamoDB)
+□ Document multi-tenancy patterns for each with official sources
+□ Compare scaling characteristics with authoritative benchmarks
+□ Check pricing calculators for cost model verification
+□ Assess team expertise honestly (survey if needed)
+</verification_checklist>
 ```
 </comparison_research>
 
@@ -385,6 +575,13 @@ For each option:
 
 <metadata_guidelines>
 Load: [metadata-guidelines.md](metadata-guidelines.md)
+
+**Enhanced guidance**:
+- Use <quality_report> to distinguish verified facts from assumptions
+- Assign confidence levels to individual findings when they vary
+- List all sources consulted with URLs for verification
+- Document contradictions encountered and how resolved
+- Be honest about limitations and gaps in research
 </metadata_guidelines>
 
 <tool_usage>
@@ -400,17 +597,30 @@ Then mcp__context7__get-library-docs for current patterns
 <web_search>
 For recent articles and updates:
 ```
-Search: "{topic} best practices 2024"
-Search: "{library} security vulnerabilities 2024"
+Search: "{topic} best practices {current_year}"
+Search: "{library} security vulnerabilities {current_year}"
+Search: "{topic} vs {alternative} comparison {current_year}"
 ```
 </web_search>
 
 <web_fetch>
 For specific documentation pages:
 ```
-Fetch official docs, API references, changelogs
+Fetch official docs, API references, changelogs with exact URLs
+Prefer WebFetch over WebSearch for authoritative sources
 ```
 </web_fetch>
 
 Include tool usage hints in research prompts when specific sources are needed.
 </tool_usage>
+
+<pitfalls_reference>
+Before completing research, review common pitfalls:
+Load: [research-pitfalls.md](research-pitfalls.md)
+
+Key patterns to avoid:
+- Configuration scope assumptions - enumerate all scopes
+- "Search for X" vagueness - provide exact URLs
+- Deprecated vs current confusion - check changelogs
+- Tool-specific variations - check each environment
+</pitfalls_reference>
